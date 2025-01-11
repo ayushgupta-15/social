@@ -12,17 +12,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { useState } from "react";
-import { useAuth, SignInButton, SignOutButton } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import { useTheme } from "next-themes";
 import Link from "next/link";
+import { clerk } from "@clerk/nextjs";
 
 function MobileNavbar() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const { isSignedIn } = useAuth();
   const { theme, setTheme } = useTheme();
 
+  console.log("User signed in:", isSignedIn); // Debugging user state
+
   return (
     <div className="flex md:hidden items-center space-x-2">
+      {/* Theme Toggle */}
       <Button
         variant="ghost"
         size="icon"
@@ -34,13 +38,14 @@ function MobileNavbar() {
         <span className="sr-only">Toggle theme</span>
       </Button>
 
+      {/* Mobile Menu */}
       <Sheet open={showMobileMenu} onOpenChange={setShowMobileMenu}>
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon">
             <MenuIcon className="h-5 w-5" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="right" className="w-[300px]">
+        <SheetContent side="right" className="w-[300px] z-[100]"> {/* Added z-index */}
           <SheetHeader>
             <SheetTitle>Menu</SheetTitle>
           </SheetHeader>
@@ -66,19 +71,23 @@ function MobileNavbar() {
                     Profile
                   </Link>
                 </Button>
-                <SignOutButton>
-                  <Button variant="ghost" className="flex items-center gap-3 justify-start w-full">
-                    <LogOutIcon className="w-4 h-4" />
-                    Logout
-                  </Button>
-                </SignOutButton>
+                <Button
+                  variant="ghost"
+                  className="flex items-center gap-3 justify-start w-full"
+                  onClick={() => clerk.signOut()} // Custom logout handler
+                >
+                  <LogOutIcon className="w-4 h-4" />
+                  Logout
+                </Button>
               </>
             ) : (
-              <SignInButton mode="modal">
-                <Button variant="default" className="w-full">
-                  Sign In
-                </Button>
-              </SignInButton>
+              <Button
+                variant="default"
+                className="w-full"
+                onClick={() => clerk.openSignIn()} // Custom sign-in handler
+              >
+                Sign In
+              </Button>
             )}
           </nav>
         </SheetContent>
