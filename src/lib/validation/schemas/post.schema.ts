@@ -8,17 +8,12 @@ export const createPostSchema = z.object({
   content: z
     .string()
     .min(1, "Post cannot be empty")
-    .max(5000, "Post is too long (maximum 5000 characters)")
-    .transform((str) => str.trim()),
-  image: z
-    .string()
-    .url("Invalid image URL")
-    .optional()
-    .or(z.literal(""))
-    .transform((val) => (val === "" ? undefined : val)),
+    .max(5000, "Post is too long (maximum 5000 characters)"),
+  image: z.string().url("Invalid image URL").optional().or(z.literal("")),
 });
 
-export type CreatePostInput = z.infer<typeof createPostSchema>;
+export type CreatePostInput = z.input<typeof createPostSchema>;
+export type CreatePostOutput = z.output<typeof createPostSchema>;
 
 /**
  * Schema for creating a comment
@@ -29,11 +24,11 @@ export const createCommentSchema = z.object({
   content: z
     .string()
     .min(1, "Comment cannot be empty")
-    .max(1000, "Comment is too long (maximum 1000 characters)")
-    .transform((str) => str.trim()),
+    .max(1000, "Comment is too long (maximum 1000 characters)"),
 });
 
-export type CreateCommentInput = z.infer<typeof createCommentSchema>;
+export type CreateCommentInput = z.input<typeof createCommentSchema>;
+export type CreateCommentOutput = z.output<typeof createCommentSchema>;
 
 /**
  * Schema for toggling like on a post

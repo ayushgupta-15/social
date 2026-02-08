@@ -3,12 +3,23 @@
 import prisma from "@/lib/prisma";
 import { getDbUserId } from "./user.action";
 import { revalidatePath } from "next/cache";
+import {
+  createCommentSchema,
+  createPostSchema,
+  type CreateCommentInput,
+  type CreatePostInput,
+} from "@/lib/validation/schemas/post.schema";
 
-export async function createPost(content: string, image: string) {
+export async function createPost(data: CreatePostInput) {
   try {
     const userId = await getDbUserId();
 
     if (!userId) return;
+
+    const parsed = createPostSchema.parse(data);
+    const content = parsed.content.trim();
+    const image =
+      typeof parsed.image === "string" && parsed.image.trim() !== "" ? parsed.image.trim() : null;
 
     const post = await prisma.post.create({
       data: {
@@ -141,15 +152,17 @@ export async function toggleLike(postId: string) {
   }
 }
 
-export async function createComment(postId: string, content: string) {
+export async function createComment(data: CreateCommentInput) {
   try {
     const userId = await getDbUserId();
 
     if (!userId) return;
+    const parsed = createCommentSchema.parse(data);
+    const content = parsed.content.trim();
     if (!content) throw new Error("Content is required");
 
     const post = await prisma.post.findUnique({
-      where: { id: postId },
+      where: { id: parsed.postId },
       select: { authorId: true },
     });
 
@@ -159,7 +172,7 @@ export async function createComment(postId: string, content: string) {
       data: {
         content,
         authorId: userId,
-        postId,
+        postId: parsed.postId,
       },
     });
 
@@ -169,7 +182,7 @@ export async function createComment(postId: string, content: string) {
           type: "COMMENT",
           userId: post.authorId,
           creatorId: userId,
-          postId,
+          postId: parsed.postId,
           commentId: comment.id,
         },
       });

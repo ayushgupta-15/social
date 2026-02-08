@@ -46,11 +46,6 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
 
   // Optimize font loading
-  optimizeFonts: true,
-
-  // Enable SWC minification
-  swcMinify: true,
-
   // Reduce bundle size
   experimental: {
     optimizePackageImports: [

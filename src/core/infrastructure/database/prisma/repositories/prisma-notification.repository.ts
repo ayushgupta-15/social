@@ -87,14 +87,14 @@ export class PrismaNotificationRepository implements INotificationRepository {
   async exists(data: {
     userId: string;
     creatorId: string;
-    type: string;
+    type: NotificationWithDetails["type"];
     postId?: string;
   }): Promise<boolean> {
     const notification = await prisma.notification.findFirst({
       where: {
         userId: data.userId,
         creatorId: data.creatorId,
-        type: data.type as any,
+        type: data.type,
         postId: data.postId,
       },
       select: { id: true },

@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatDistanceToNow } from "date-fns";
 import { HeartIcon, MessageCircleIcon, UserPlusIcon } from "lucide-react";
 import toast from "react-hot-toast";
+import { OptimizedImage } from "@/components/shared/OptimizedImage";
 
 type NotificationItem = {
   id: string;
@@ -125,10 +126,14 @@ function NotificationsPage() {
                           <div className="text-sm text-muted-foreground rounded-md p-2 bg-muted/30 mt-2">
                             <p>{notification.post.content}</p>
                             {notification.post.image && (
-                              <img
+                              <OptimizedImage
                                 src={notification.post.image}
                                 alt="Post content"
-                                className="mt-2 rounded-md w-full max-w-[200px] h-auto object-cover"
+                                width={200}
+                                height={200}
+                                className="mt-2 rounded-md w-full max-w-[200px]"
+                                objectFit="cover"
+                                sizes="200px"
                               />
                             )}
                           </div>

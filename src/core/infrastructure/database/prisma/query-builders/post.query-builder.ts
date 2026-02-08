@@ -71,10 +71,28 @@ export class PostQueryBuilder {
   /**
    * Transform Prisma post to PostWithDetails DTO
    */
-  static transformToPostWithDetails(post: any): any {
+  static transformToPostWithDetails(post: {
+    id: string;
+    content: string | null;
+    image: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    authorId: string;
+    author: {
+      id: string;
+      name: string | null;
+      username: string | null;
+      image: string | null;
+    };
+    _count: {
+      likes: number;
+      comments: number;
+    };
+    likes?: Array<{ userId: string }>;
+  }) {
     return {
       ...post,
-      hasLiked: post.likes && post.likes.length > 0,
+      hasLiked: (post.likes ?? []).length > 0,
       likes: undefined, // Remove the likes array, we only need hasLiked
     };
   }

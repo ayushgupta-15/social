@@ -1,6 +1,6 @@
 "use client";
 
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { getPosts } from "@/actions/post.action";
 
 /**
@@ -13,17 +13,9 @@ import { getPosts } from "@/actions/post.action";
  * - Optimistic updates when combined with mutations
  */
 export function usePosts() {
-  return useInfiniteQuery({
+  return useQuery({
     queryKey: ["posts"],
-    queryFn: async ({ pageParam }) => {
-      const result = await getPosts({ cursor: pageParam, limit: 10 });
-      return result;
-    },
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => {
-      // Return the next cursor if there are more pages
-      return lastPage.nextCursor ?? undefined;
-    },
+    queryFn: async () => getPosts(),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
@@ -33,7 +25,7 @@ export function usePosts() {
  * Hook to fetch a single post by ID
  */
 export function usePost(postId: string) {
-  return useInfiniteQuery({
+  return useQuery({
     queryKey: ["post", postId],
     queryFn: async () => {
       // You'll need to create a getPost action
@@ -41,8 +33,6 @@ export function usePost(postId: string) {
       // return result;
       throw new Error("Not implemented yet");
     },
-    initialPageParam: undefined,
-    getNextPageParam: () => undefined,
     enabled: !!postId,
   });
 }
@@ -51,16 +41,14 @@ export function usePost(postId: string) {
  * Hook to fetch posts by a specific user
  */
 export function useUserPosts(username: string) {
-  return useInfiniteQuery({
+  return useQuery({
     queryKey: ["posts", "user", username],
-    queryFn: async ({ pageParam }) => {
+    queryFn: async () => {
       // You'll need to create a getUserPosts action
-      // const result = await getUserPosts({ username, cursor: pageParam });
+      // const result = await getUserPosts({ username });
       // return result;
       throw new Error("Not implemented yet");
     },
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     enabled: !!username,
     staleTime: 5 * 60 * 1000,
   });
@@ -70,16 +58,14 @@ export function useUserPosts(username: string) {
  * Hook to fetch posts liked by a user
  */
 export function useUserLikedPosts(username: string) {
-  return useInfiniteQuery({
+  return useQuery({
     queryKey: ["posts", "liked", username],
-    queryFn: async ({ pageParam }) => {
+    queryFn: async () => {
       // You'll need to create a getUserLikedPosts action
-      // const result = await getUserLikedPosts({ username, cursor: pageParam });
+      // const result = await getUserLikedPosts({ username });
       // return result;
       throw new Error("Not implemented yet");
     },
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     enabled: !!username,
     staleTime: 5 * 60 * 1000,
   });
