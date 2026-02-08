@@ -8,8 +8,8 @@
 type Factory<T> = () => T;
 
 class Container {
-  private instances = new Map<string, any>();
-  private factories = new Map<string, Factory<any>>();
+  private instances = new Map<string, unknown>();
+  private factories = new Map<string, Factory<unknown>>();
 
   /**
    * Register a singleton instance

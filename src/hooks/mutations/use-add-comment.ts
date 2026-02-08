@@ -25,17 +25,26 @@ export function useAddComment() {
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: ["posts"] });
 
-      const previousPosts = queryClient.getQueryData(["posts"]);
+      type PostsCache = {
+        pages: Array<{
+          items: Array<{
+            id: string;
+            _count: { comments: number };
+          }>;
+        }>;
+      };
+
+      const previousPosts = queryClient.getQueryData<PostsCache>(["posts"]);
 
       // Optimistically update comment count
-      queryClient.setQueryData(["posts"], (old: any) => {
+      queryClient.setQueryData<PostsCache | undefined>(["posts"], (old) => {
         if (!old?.pages) return old;
 
         return {
           ...old,
-          pages: old.pages.map((page: any) => ({
+          pages: old.pages.map((page) => ({
             ...page,
-            items: page.items.map((post: any) => {
+            items: page.items.map((post) => {
               if (post.id === newComment.postId) {
                 return {
                   ...post,

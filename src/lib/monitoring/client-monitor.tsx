@@ -21,10 +21,9 @@ export function ClientMonitor() {
   useEffect(() => {
     // Monitor Core Web Vitals
     if (typeof window !== "undefined") {
-      import("web-vitals").then(({ onCLS, onFCP, onFID, onLCP, onTTFB, onINP }) => {
+      import("web-vitals").then(({ onCLS, onFCP, onLCP, onTTFB, onINP }) => {
         onCLS(reportWebVitals);
         onFCP(reportWebVitals);
-        onFID(reportWebVitals);
         onLCP(reportWebVitals);
         onTTFB(reportWebVitals);
         onINP(reportWebVitals);

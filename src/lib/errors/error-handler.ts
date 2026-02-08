@@ -64,7 +64,7 @@ export function handleError(error: unknown): ErrorResponse {
   if (error instanceof ZodError) {
     const formattedErrors: Record<string, string[]> = {};
 
-    error.errors.forEach((err) => {
+    error.issues.forEach((err) => {
       const path = err.path.join(".");
       if (!formattedErrors[path]) {
         formattedErrors[path] = [];

@@ -1,13 +1,7 @@
 import { z } from "zod";
+import { NotificationType as PrismaNotificationType } from "@prisma/client";
 
-/**
- * Notification type enum
- */
-export enum NotificationType {
-  LIKE = "LIKE",
-  COMMENT = "COMMENT",
-  FOLLOW = "FOLLOW",
-}
+export type NotificationType = PrismaNotificationType;
 
 /**
  * Notification with creator and post details
@@ -35,7 +29,7 @@ export interface NotificationWithDetails {
 export const CreateNotificationDto = z.object({
   userId: z.string().cuid(),
   creatorId: z.string().cuid(),
-  type: z.nativeEnum(NotificationType),
+  type: z.nativeEnum(PrismaNotificationType),
   postId: z.string().cuid().optional(),
   commentId: z.string().cuid().optional(),
 });

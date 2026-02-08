@@ -12,7 +12,12 @@ import { Button } from "@/components/ui/button";
 import { createPost } from "@/actions/post.action";
 import { toast } from "react-hot-toast";
 import ImageUpload from "@/components/ImageUpload";
-import { createPostSchema, type CreatePostInput } from "@/lib/validation/schemas/post.schema";
+import { OptimizedImage } from "@/components/shared/OptimizedImage";
+import {
+  createPostSchema,
+  type CreatePostInput,
+  type CreatePostOutput,
+} from "@/lib/validation/schemas/post.schema";
 
 /**
  * CreatePostForm Component (Modernized with react-hook-form)
@@ -35,7 +40,7 @@ export function CreatePostForm() {
     setValue,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<CreatePostInput>({
+  } = useForm<CreatePostInput, unknown, CreatePostOutput>({
     resolver: zodResolver(createPostSchema),
     defaultValues: {
       content: "",
@@ -47,7 +52,7 @@ export function CreatePostForm() {
   const imageUrl = watch("image");
   const hasContent = content?.trim() || imageUrl;
 
-  const onSubmit = async (data: CreatePostInput) => {
+  const onSubmit = async (data: CreatePostOutput) => {
     try {
       const result = await createPost(data);
 
@@ -112,10 +117,14 @@ export function CreatePostForm() {
             <div className="border rounded-lg p-4 relative">
               {imageUrl ? (
                 <div className="relative">
-                  <img
+                  <OptimizedImage
                     src={imageUrl}
                     alt="Post preview"
-                    className="rounded-lg w-full max-h-96 object-cover"
+                    width={800}
+                    height={600}
+                    className="rounded-lg w-full max-h-96"
+                    objectFit="cover"
+                    sizes="(max-width: 640px) 100vw, 800px"
                   />
                   <Button
                     type="button"

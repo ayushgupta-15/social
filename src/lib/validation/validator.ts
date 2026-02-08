@@ -10,7 +10,7 @@ export class ValidationError extends Error {
   constructor(zodError: ZodError) {
     const formattedErrors: Record<string, string[]> = {};
 
-    zodError.errors.forEach((error) => {
+    zodError.issues.forEach((error) => {
       const path = error.path.join(".");
       if (!formattedErrors[path]) {
         formattedErrors[path] = [];
@@ -96,10 +96,10 @@ export function safeValidate<T extends z.ZodTypeAny>(
  * Validate partial data (useful for updates)
  * Only validates fields that are present
  */
-export function validatePartial<T extends z.ZodTypeAny>(
+export function validatePartial<T extends z.ZodObject<z.ZodRawShape>>(
   schema: T,
   data: unknown
 ): Partial<z.infer<T>> {
   const partialSchema = schema.partial();
-  return validate(partialSchema, data);
+  return validate(partialSchema, data) as Partial<z.infer<T>>;
 }
