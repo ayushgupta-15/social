@@ -19,16 +19,19 @@ async function WhoToFollow() {
           {users.map((user) => (
             <div key={user.id} className="flex gap-2 items-center justify-between ">
               <div className="flex items-center gap-1">
-                <Link href={`/profile/${user.username}`}>
+                <Link href={`/profile/${user.username ?? user.id}`}>
                   <Avatar>
                     <AvatarImage src={user.image ?? "/avatar.png"} />
                   </Avatar>
                 </Link>
                 <div className="text-xs">
-                  <Link href={`/profile/${user.username}`} className="font-medium cursor-pointer">
-                    {user.name}
+                  <Link
+                    href={`/profile/${user.username ?? user.id}`}
+                    className="font-medium cursor-pointer"
+                  >
+                    {user.name ?? user.username ?? user.id}
                   </Link>
-                  <p className="text-muted-foreground">@{user.username}</p>
+                  <p className="text-muted-foreground">@{user.username ?? user.id}</p>
                   <p className="text-muted-foreground">{user._count.followers} followers</p>
                 </div>
               </div>

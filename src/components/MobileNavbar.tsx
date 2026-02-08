@@ -12,13 +12,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { useState } from "react";
-import { useAuth, SignInButton, SignOutButton } from "@clerk/nextjs";
 import { useTheme } from "next-themes";
 import Link from "next/link";
+import { signIn, signOut, useSession } from "next-auth/react";
 
 function MobileNavbar() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const { isSignedIn } = useAuth();
+  const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
 
   return (
@@ -52,7 +52,7 @@ function MobileNavbar() {
               </Link>
             </Button>
 
-            {isSignedIn ? (
+            {session?.user ? (
               <>
                 <Button variant="ghost" className="flex items-center gap-3 justify-start" asChild>
                   <Link href="/notifications">
@@ -61,24 +61,24 @@ function MobileNavbar() {
                   </Link>
                 </Button>
                 <Button variant="ghost" className="flex items-center gap-3 justify-start" asChild>
-                  <Link href="/profile">
+                  <Link href={`/profile/${session.user.username ?? session.user.id}`}>
                     <UserIcon className="w-4 h-4" />
                     Profile
                   </Link>
                 </Button>
-                <SignOutButton>
-                  <Button variant="ghost" className="flex items-center gap-3 justify-start w-full">
-                    <LogOutIcon className="w-4 h-4" />
-                    Logout
-                  </Button>
-                </SignOutButton>
+                <Button
+                  variant="ghost"
+                  className="flex items-center gap-3 justify-start w-full"
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                >
+                  <LogOutIcon className="w-4 h-4" />
+                  Logout
+                </Button>
               </>
             ) : (
-              <SignInButton mode="modal">
-                <Button variant="default" className="w-full">
-                  Sign In
-                </Button>
-              </SignInButton>
+              <Button variant="default" className="w-full" onClick={() => signIn()}>
+                Sign In
+              </Button>
             )}
           </nav>
         </SheetContent>

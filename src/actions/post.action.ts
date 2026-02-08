@@ -155,32 +155,25 @@ export async function createComment(postId: string, content: string) {
 
     if (!post) throw new Error("Post not found");
 
-    // Create comment and notification in a transaction
-    const [comment] = await prisma.$transaction(async (tx) => {
-      // Create comment first
-      const newComment = await tx.comment.create({
+    const comment = await prisma.comment.create({
+      data: {
+        content,
+        authorId: userId,
+        postId,
+      },
+    });
+
+    if (post.authorId !== userId) {
+      await prisma.notification.create({
         data: {
-          content,
-          authorId: userId,
+          type: "COMMENT",
+          userId: post.authorId,
+          creatorId: userId,
           postId,
+          commentId: comment.id,
         },
       });
-
-      // Create notification if commenting on someone else's post
-      if (post.authorId !== userId) {
-        await tx.notification.create({
-          data: {
-            type: "COMMENT",
-            userId: post.authorId,
-            creatorId: userId,
-            postId,
-            commentId: newComment.id,
-          },
-        });
-      }
-
-      return [newComment];
-    });
+    }
 
     revalidatePath(`/`);
     return { success: true, comment };

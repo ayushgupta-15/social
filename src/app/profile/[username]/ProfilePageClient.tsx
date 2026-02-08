@@ -1,6 +1,7 @@
 "use client";
 
-import { getProfileByUsername, getUserPosts, updateProfile } from "@/actions/profile.action";
+import { updateProfile } from "@/actions/profile.action";
+import type { getProfileByUsername, getUserPosts } from "@/actions/profile.action";
 import { toggleFollow } from "@/actions/user.action";
 import PostCard from "@/components/PostCard";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
@@ -18,7 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { SignInButton, useUser } from "@clerk/nextjs";
+import { signIn, useSession } from "next-auth/react";
 import { format } from "date-fns";
 import {
   CalendarIcon,
@@ -47,7 +48,7 @@ function ProfilePageClient({
   posts,
   user,
 }: ProfilePageClientProps) {
-  const { user: currentUser } = useUser();
+  const { data: session } = useSession();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [isUpdatingFollow, setIsUpdatingFollow] = useState(false);
@@ -73,22 +74,20 @@ function ProfilePageClient({
   };
 
   const handleFollow = async () => {
-    if (!currentUser) return;
+    if (!session?.user) return;
 
     try {
       setIsUpdatingFollow(true);
       await toggleFollow(user.id);
       setIsFollowing(!isFollowing);
-    } catch (error) {
+    } catch {
       toast.error("Failed to update follow status");
     } finally {
       setIsUpdatingFollow(false);
     }
   };
 
-  const isOwnProfile =
-    currentUser?.username === user.username ||
-    currentUser?.emailAddresses[0].emailAddress.split("@")[0] === user.username;
+  const isOwnProfile = session?.user?.id === user.id;
 
   const formattedDate = format(new Date(user.createdAt), "MMMM yyyy");
 
@@ -102,8 +101,8 @@ function ProfilePageClient({
                 <Avatar className="w-24 h-24">
                   <AvatarImage src={user.image ?? "/avatar.png"} />
                 </Avatar>
-                <h1 className="mt-4 text-2xl font-bold">{user.name ?? user.username}</h1>
-                <p className="text-muted-foreground">@{user.username}</p>
+                <h1 className="mt-4 text-2xl font-bold">{user.name ?? user.username ?? user.id}</h1>
+                <p className="text-muted-foreground">@{user.username ?? user.id}</p>
                 <p className="mt-2 text-sm">{user.bio}</p>
 
                 {/* PROFILE STATS */}
@@ -127,10 +126,10 @@ function ProfilePageClient({
                 </div>
 
                 {/* "FOLLOW & EDIT PROFILE" BUTTONS */}
-                {!currentUser ? (
-                  <SignInButton mode="modal">
-                    <Button className="w-full mt-4">Follow</Button>
-                  </SignInButton>
+                {!session?.user ? (
+                  <Button className="w-full mt-4" onClick={() => signIn()}>
+                    Follow
+                  </Button>
                 ) : isOwnProfile ? (
                   <Button className="w-full mt-4" onClick={() => setShowEditDialog(true)}>
                     <EditIcon className="size-4 mr-2" />

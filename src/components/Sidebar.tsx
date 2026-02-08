@@ -1,18 +1,41 @@
-import { currentUser } from "@clerk/nextjs/server";
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { SignInButton, SignUpButton } from "@clerk/nextjs";
 import { Button } from "./ui/button";
-import { getUserByClerkId } from "@/actions/user.action";
 import Link from "next/link";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Separator } from "./ui/separator";
 import { LinkIcon, MapPinIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 
-async function Sidebar() {
-  const authUser = await currentUser();
-  if (!authUser) return <UnAuthenticatedSidebar />;
+type SidebarUser = {
+  id: string;
+  name: string | null;
+  username: string | null;
+  bio: string | null;
+  image: string | null;
+  location: string | null;
+  website: string | null;
+  _count: { followers: number; following: number };
+};
 
-  const user = await getUserByClerkId(authUser.id);
+function Sidebar() {
+  const { data: session, status } = useSession();
+  const [user, setUser] = useState<SidebarUser | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      if (!session?.user) return;
+      const res = await fetch("/api/me");
+      if (!res.ok) return;
+      const data = (await res.json()) as { user: SidebarUser | null };
+      setUser(data.user ?? null);
+    };
+    load();
+  }, [session?.user]);
+
+  if (status !== "authenticated") return <UnAuthenticatedSidebar />;
   if (!user) return null;
 
   return (
@@ -21,7 +44,7 @@ async function Sidebar() {
         <CardContent className="pt-6">
           <div className="flex flex-col items-center text-center">
             <Link
-              href={`/profile/${user.username}`}
+              href={`/profile/${user.username ?? user.id}`}
               className="flex flex-col items-center justify-center"
             >
               <Avatar className="w-20 h-20 border-2 ">
@@ -29,8 +52,8 @@ async function Sidebar() {
               </Avatar>
 
               <div className="mt-4 space-y-1">
-                <h3 className="font-semibold">{user.name}</h3>
-                <p className="text-sm text-muted-foreground">{user.username}</p>
+                <h3 className="font-semibold">{user.name ?? user.username ?? user.id}</h3>
+                <p className="text-sm text-muted-foreground">{user.username ?? user.id}</p>
               </div>
             </Link>
 
@@ -87,16 +110,12 @@ const UnAuthenticatedSidebar = () => (
         <p className="text-center text-muted-foreground mb-4">
           Login to access your profile and connect with others.
         </p>
-        <SignInButton mode="modal">
-          <Button className="w-full" variant="outline">
-            Login
-          </Button>
-        </SignInButton>
-        <SignUpButton mode="modal">
-          <Button className="w-full mt-2" variant="default">
-            Sign Up
-          </Button>
-        </SignUpButton>
+        <Button className="w-full" variant="outline" asChild>
+          <Link href="/auth/sign-in">Login</Link>
+        </Button>
+        <Button className="w-full mt-2" variant="default" asChild>
+          <Link href="/auth/sign-up">Sign Up</Link>
+        </Button>
       </CardContent>
     </Card>
   </div>

@@ -1,5 +1,5 @@
 import { createUploadthing, type FileRouter } from "uploadthing/next";
-import { auth } from "@clerk/nextjs/server";
+import { getAuthSession } from "@/auth";
 
 const f = createUploadthing();
 
@@ -13,13 +13,13 @@ export const ourFileRouter = {
   })
     .middleware(async () => {
       // this code runs on your server before upload
-      const { userId } = await auth();
-      if (!userId) throw new Error("Unauthorized");
+      const session = await getAuthSession();
+      if (!session?.user?.id) throw new Error("Unauthorized");
 
       // whatever is returned here is accessible in onUploadComplete as `metadata`
-      return { userId };
+      return { userId: session.user.id };
     })
-    .onUploadComplete(async ({ metadata, file }) => {
+    .onUploadComplete(async ({ file }) => {
       try {
         return { fileUrl: file.url };
       } catch (error) {

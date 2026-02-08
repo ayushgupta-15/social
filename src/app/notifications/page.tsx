@@ -1,20 +1,43 @@
 "use client";
 
-import { getNotifications, markNotificationsAsRead } from "@/actions/notification.action";
+import { useEffect, useState } from "react";
 import { NotificationsSkeleton } from "@/components/NotificationSkelton";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatDistanceToNow } from "date-fns";
 import { HeartIcon, MessageCircleIcon, UserPlusIcon } from "lucide-react";
-
-import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
-type Notifications = Awaited<ReturnType<typeof getNotifications>>;
-type Notification = Notifications[number];
+type NotificationItem = {
+  id: string;
+  type: "LIKE" | "COMMENT" | "FOLLOW";
+  read: boolean;
+  createdAt: string;
+  creator: {
+    id: string;
+    name: string | null;
+    username: string | null;
+    image: string | null;
+  };
+  post: {
+    id: string;
+    content: string | null;
+    image: string | null;
+  } | null;
+  comment: {
+    id: string;
+    content: string;
+    createdAt: string;
+  } | null;
+};
 
-const getNotificationIcon = (type: string) => {
+type NotificationsResponse = {
+  notifications: NotificationItem[];
+  unreadCount: number;
+};
+
+const getNotificationIcon = (type: NotificationItem["type"]) => {
   switch (type) {
     case "LIKE":
       return <HeartIcon className="size-4 text-red-500" />;
@@ -28,26 +51,31 @@ const getNotificationIcon = (type: string) => {
 };
 
 function NotificationsPage() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchNotifications = async () => {
+    const loadNotifications = async () => {
       setIsLoading(true);
       try {
-        const data = await getNotifications();
-        setNotifications(data);
+        const response = await fetch("/api/notifications", {
+          method: "GET",
+          cache: "no-store",
+        });
+        if (!response.ok) throw new Error("Request failed");
 
-        const unreadIds = data.filter((n) => !n.read).map((n) => n.id);
-        if (unreadIds.length > 0) await markNotificationsAsRead(unreadIds);
-      } catch (error) {
-        toast.error("Failed to fetch notifications");
+        const data: NotificationsResponse = await response.json();
+        setNotifications(data.notifications);
+        setUnreadCount(data.unreadCount);
+      } catch {
+        toast.error("Failed to load notifications");
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchNotifications();
+    loadNotifications();
   }, []);
 
   if (isLoading) return <NotificationsSkeleton />;
@@ -58,9 +86,7 @@ function NotificationsPage() {
         <CardHeader className="border-b">
           <div className="flex items-center justify-between">
             <CardTitle>Notifications</CardTitle>
-            <span className="text-sm text-muted-foreground">
-              {notifications.filter((n) => !n.read).length} unread
-            </span>
+            <span className="text-sm text-muted-foreground">{unreadCount} unread</span>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -83,13 +109,13 @@ function NotificationsPage() {
                       {getNotificationIcon(notification.type)}
                       <span>
                         <span className="font-medium">
-                          {notification.creator.name ?? notification.creator.username}
+                          {notification.creator.name ?? notification.creator.username ?? "User"}
                         </span>{" "}
                         {notification.type === "FOLLOW"
                           ? "started following you"
                           : notification.type === "LIKE"
-                          ? "liked your post"
-                          : "commented on your post"}
+                            ? "liked your post"
+                            : "commented on your post"}
                       </span>
                     </div>
 
@@ -128,4 +154,5 @@ function NotificationsPage() {
     </div>
   );
 }
+
 export default NotificationsPage;

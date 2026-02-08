@@ -1,12 +1,13 @@
+"use client";
+
 import { BellIcon, HomeIcon, UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { SignInButton, UserButton } from "@clerk/nextjs";
 import ModeToggle from "./ModeToggle";
-import { currentUser } from "@clerk/nextjs/server";
+import { signIn, signOut, useSession } from "next-auth/react";
 
-async function DesktopNavbar() {
-  const user = await currentUser();
+function DesktopNavbar() {
+  const { data: session } = useSession();
 
   return (
     <div className="hidden md:flex items-center space-x-4">
@@ -19,7 +20,7 @@ async function DesktopNavbar() {
         </Link>
       </Button>
 
-      {user ? (
+      {session?.user ? (
         <>
           <Button variant="ghost" className="flex items-center gap-2" asChild>
             <Link href="/notifications">
@@ -28,21 +29,19 @@ async function DesktopNavbar() {
             </Link>
           </Button>
           <Button variant="ghost" className="flex items-center gap-2" asChild>
-            <Link
-              href={`/profile/${
-                user.username ?? user.emailAddresses[0].emailAddress.split("@")[0]
-              }`}
-            >
+            <Link href={`/profile/${session.user.username ?? session.user.id}`}>
               <UserIcon className="w-4 h-4" />
               <span className="hidden lg:inline">Profile</span>
             </Link>
           </Button>
-          <UserButton />
+          <Button variant="outline" onClick={() => signOut({ callbackUrl: "/" })}>
+            Sign out
+          </Button>
         </>
       ) : (
-        <SignInButton mode="modal">
-          <Button variant="default">Sign In</Button>
-        </SignInButton>
+        <Button variant="default" onClick={() => signIn()}>
+          Sign In
+        </Button>
       )}
     </div>
   );
