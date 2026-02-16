@@ -87,7 +87,7 @@
     "postcss": "^8.5.6",
     "prettier": "^3.8.1",
     "prisma": "^7.4.0",
-    "prisma-zod-generator": "^2.1.2",
+    "prisma-zod-generator": "^2.1.4",
     "react-hook-form": "^7.71.1",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
